@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MIIBR AI | Pro Accurate Editor</title>
+    <title>MIIBR AI PRO | Pixel-Perfect Editor</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/dist/browser.umd.js"></script>
-    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
     <style>
         .checkerboard {
             background-image: linear-gradient(45deg, #e5e7eb 25%, transparent 25%), linear-gradient(-45deg, #e5e7eb 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e5e7eb 75%), linear-gradient(-45deg, transparent 75%, #e5e7eb 75%);
@@ -16,99 +16,95 @@
             background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
             background-color: white;
         }
-        .bg-option { cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
-        .bg-option:hover { transform: scale(1.05); }
-        .active-ring { outline: 3px solid #3b82f6; outline-offset: 2px; }
+        .bg-option { cursor: pointer; transition: all 0.2s; }
+        .bg-option:hover { transform: translateY(-2px); }
+        .active-ring { outline: 3px solid #2563eb; outline-offset: 2px; }
         
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #3b82f6; cursor: pointer; margin-top: -6px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #cbd5e1; border-radius: 4px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%; background: #2563eb; cursor: pointer; margin-top: -6px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #dfe5ef; border-radius: 4px; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen font-sans text-slate-800">
+<body class="bg-slate-50 min-h-screen font-sans">
 
-    <nav class="bg-white border-b py-4 px-6 flex justify-between items-center shadow-sm sticky top-0 z-50">
+    <nav class="bg-white border-b py-4 px-6 flex justify-between items-center sticky top-0 z-50 shadow-sm">
         <div class="flex items-center space-x-3">
-            <div class="bg-blue-600 text-white p-2 rounded-xl shadow-md">
-                <i class="fas fa-microchip"></i>
+            <div class="bg-blue-600 text-white p-2 rounded-xl">
+                <i class="fas fa-microchip text-xl"></i>
             </div>
-            <span class="text-2xl font-black tracking-tight">MIIBR <span class="text-blue-600">AI PRO</span></span>
+            <span class="text-2xl font-black text-slate-800 tracking-tighter uppercase">Miibr <span class="text-blue-600">Ai Pro</span></span>
         </div>
-        <button onclick="location.reload()" class="font-semibold text-slate-500 hover:text-blue-600 transition flex items-center">
-            <i class="fas fa-rotate-right mr-2"></i> Reset
+        <button onclick="location.reload()" class="text-sm font-bold text-slate-500 hover:text-blue-600 transition flex items-center">
+            <i class="fas fa-redo-alt mr-2"></i> RESET
         </button>
     </nav>
 
     <main class="max-w-7xl mx-auto p-4 md:p-8">
         
-        <div id="uploadBox" class="bg-white rounded-3xl shadow-lg p-12 text-center border border-slate-100 max-w-2xl mx-auto mt-10 transition-all">
+        <div id="uploadBox" class="bg-white rounded-[2.5rem] shadow-xl p-12 text-center border border-slate-100 max-w-2xl mx-auto mt-12 transition-all">
             <input type="file" id="fileInput" class="hidden" accept="image/*">
             <div onclick="document.getElementById('fileInput').click()" class="cursor-pointer group">
-                <div class="w-24 h-24 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
-                    <i class="fas fa-crosshairs text-4xl"></i>
+                <div class="w-24 h-24 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-expand text-4xl"></i>
                 </div>
-                <h1 class="text-4xl font-extrabold text-slate-900 mb-3">Upload Logo or Image</h1>
-                <p class="text-slate-500 mb-8">Pixel-perfect object & logo extraction.</p>
-                <div class="bg-blue-600 text-white inline-block px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-blue-300 transition-all group-hover:-translate-y-1">
-                    Select Photo
-                </div>
+                <h1 class="text-4xl font-black text-slate-900 mb-2 tracking-tight">Perception Extraction</h1>
+                <p class="text-slate-500 mb-8 font-medium">Accurate background removal for logos & objects.</p>
+                <div class="bg-blue-600 text-white inline-block px-10 py-4 rounded-2xl font-bold text-lg shadow-lg shadow-blue-200 group-hover:bg-blue-700 transition">UPLOAD IMAGE</div>
             </div>
         </div>
 
-        <div id="editorBox" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 items-start mt-4">
+        <div id="editorBox" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
-            <div class="lg:col-span-8 bg-white p-4 rounded-3xl shadow-sm border border-slate-200">
-                <div class="checkerboard rounded-2xl overflow-hidden relative min-h-[400px] flex items-center justify-center bg-slate-100 border border-slate-200">
-                    <canvas id="outputCanvas" class="max-w-full h-auto max-h-[70vh] object-contain"></canvas>
+            <div class="lg:col-span-8 bg-white p-4 rounded-[2.5rem] shadow-lg border border-slate-100">
+                <div class="checkerboard rounded-3xl overflow-hidden relative min-h-[450px] flex items-center justify-center bg-slate-50">
+                    <canvas id="outputCanvas" class="max-w-full h-auto max-h-[75vh] object-contain drop-shadow-2xl"></canvas>
                     
-                    <div id="loader" class="absolute inset-0 bg-white/95 flex flex-col items-center justify-center z-10 hidden backdrop-blur-sm transition-all">
-                        <div class="relative w-24 h-24 mb-6">
-                            <div class="absolute inset-0 border-4 border-slate-200 rounded-full"></div>
-                            <div class="absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
-                            <i class="fas fa-brain absolute inset-0 flex items-center justify-center text-2xl text-blue-600"></i>
-                        </div>
-                        <p class="font-extrabold text-slate-800 text-xl mb-2">Analyzing Image Perception...</p>
-                        <p id="progressText" class="font-medium text-blue-600 text-sm">Please wait, setting up Neural Network (First time only)</p>
+                    <div id="loader" class="absolute inset-0 bg-white/95 flex flex-col items-center justify-center z-10 hidden backdrop-blur-md">
+                        <div class="w-20 h-20 border-4 border-slate-100 border-t-blue-600 rounded-full animate-spin mb-6"></div>
+                        <p id="progressText" class="font-black text-slate-800 text-xl tracking-tight">BOOTING AI PERCEPTION...</p>
+                        <p class="text-slate-400 text-sm mt-2">Connecting to Neural Network...</p>
                     </div>
                 </div>
             </div>
 
-            <div class="lg:col-span-4 bg-white p-6 rounded-3xl shadow-sm border border-slate-200 h-[70vh] overflow-y-auto">
-                <div class="mb-8">
-                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Background</h3>
-                    <div class="flex flex-wrap gap-3 mb-4">
-                        <div onclick="setBg('transparent', this)" class="w-12 h-12 rounded-full checkerboard border border-slate-300 bg-option active-ring" title="Transparent"></div>
-                        <div onclick="setBg('#ffffff', this)" class="w-12 h-12 rounded-full bg-white border border-slate-300 bg-option" title="White"></div>
-                        <div onclick="setBg('#3b82f6', this)" class="w-12 h-12 rounded-full bg-blue-500 bg-option"></div>
-                        <div onclick="setBg('#000000', this)" class="w-12 h-12 rounded-full bg-black bg-option"></div>
+            <div class="lg:col-span-4 space-y-6">
+                
+                <div class="bg-white p-8 rounded-[2rem] shadow-lg border border-slate-100">
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 italic">Editor Toolkit</h3>
+                    
+                    <div class="mb-8">
+                        <p class="text-sm font-bold text-slate-800 mb-4">Background Styles</p>
+                        <div class="flex flex-wrap gap-3">
+                            <div onclick="setBg('transparent', this)" class="w-12 h-12 rounded-xl checkerboard border border-slate-200 bg-option active-ring"></div>
+                            <div onclick="setBg('#ffffff', this)" class="w-12 h-12 rounded-xl bg-white border border-slate-200 bg-option"></div>
+                            <div onclick="setBg('#000000', this)" class="w-12 h-12 rounded-xl bg-black bg-option"></div>
+                            <div onclick="setBg('#3b82f6', this)" class="w-12 h-12 rounded-xl bg-blue-500 bg-option"></div>
+                        </div>
+                        <input type="file" id="bgInput" class="hidden" accept="image/*">
+                        <button onclick="document.getElementById('bgInput').click()" class="w-full mt-6 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-black text-slate-500 hover:bg-slate-100 transition">
+                            + CUSTOM BACKGROUND
+                        </button>
                     </div>
-                    <input type="file" id="bgInput" class="hidden" accept="image/*">
-                    <button onclick="document.getElementById('bgInput').click()" class="w-full py-3 px-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition flex items-center justify-center">
-                        <i class="fas fa-image mr-2 text-blue-500"></i> Upload Custom Background
+
+                    <div class="space-y-6 mb-8">
+                        <div>
+                            <div class="flex justify-between text-[10px] font-black text-slate-400 mb-2 uppercase">Brightness <span id="brightVal">100%</span></div>
+                            <input type="range" id="brightness" min="0" max="200" value="100" oninput="updateFilters()">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[10px] font-black text-slate-400 mb-2 uppercase">Contrast <span id="contrastVal">100%</span></div>
+                            <input type="range" id="contrast" min="0" max="200" value="100" oninput="updateFilters()">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[10px] font-black text-slate-400 mb-2 uppercase">Saturation <span id="saturateVal">100%</span></div>
+                            <input type="range" id="saturation" min="0" max="200" value="100" oninput="updateFilters()">
+                        </div>
+                    </div>
+
+                    <button onclick="downloadImage()" class="w-full bg-slate-900 hover:bg-blue-600 text-white py-4 rounded-2xl font-black text-lg transition-all shadow-xl flex items-center justify-center">
+                        <i class="fas fa-download mr-3"></i> SAVE HD PNG
                     </button>
                 </div>
-
-                <hr class="border-slate-100 mb-6">
-
-                <div class="mb-8 space-y-5">
-                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider">Adjust Subject</h3>
-                    <div>
-                        <div class="flex justify-between text-xs font-semibold text-slate-500 mb-2"><span>Brightness</span><span id="brightVal">100%</span></div>
-                        <input type="range" id="brightness" min="0" max="200" value="100" oninput="updateFilters()">
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-xs font-semibold text-slate-500 mb-2"><span>Contrast</span><span id="contrastVal">100%</span></div>
-                        <input type="range" id="contrast" min="0" max="200" value="100" oninput="updateFilters()">
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-xs font-semibold text-slate-500 mb-2"><span>Saturation</span><span id="saturateVal">100%</span></div>
-                        <input type="range" id="saturation" min="0" max="200" value="100" oninput="updateFilters()">
-                    </div>
-                </div>
-
-                <button onclick="downloadImage()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center transition-all shadow-md">
-                    <i class="fas fa-download mr-2"></i> Download HD Image
-                </button>
             </div>
         </div>
     </main>
@@ -116,10 +112,7 @@
     <script>
         const canvas = document.getElementById('outputCanvas');
         const ctx = canvas.getContext('2d');
-        
-        // This will hold the perfectly cut out image from the AI
         let extractedSubject = null; 
-        
         let currentBgType = 'transparent'; 
         let currentBgVal = 'transparent';
         
@@ -136,36 +129,35 @@
             document.getElementById('loader').classList.remove('hidden');
             
             try {
-                // Initialize the High-Perception img.ly AI Model
-                // This model traces precise outlines for logos, text, hair, and objects.
+                // FIXED: Adding publicPath for Vercel/CDN compatibility
                 const imageBlob = await imglyRemoveBackground(file, {
+                    publicPath: "https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/dist/assets/",
                     progress: (key, current, total) => {
                         const progText = document.getElementById('progressText');
+                        const percent = Math.round((current / total) * 100) || 0;
                         if (key === 'compute:inference') {
-                            progText.innerText = "Extracting Pixel-Perfect Outlines...";
+                            progText.innerText = "TRACING ACCURATE EDGES...";
                         } else {
-                            progText.innerText = "Loading AI Perception Model...";
+                            progText.innerText = `AI PERCEPTION: ${percent}%`;
                         }
                     }
                 });
 
-                // Create an image object from the AI's perfect transparent output
                 const url = URL.createObjectURL(imageBlob);
                 extractedSubject = new Image();
                 extractedSubject.src = url;
                 
                 extractedSubject.onload = () => {
                     document.getElementById('loader').classList.add('hidden');
-                    renderAll(); // Draw the final composition
+                    renderAll(); 
                 };
             } catch (error) {
                 console.error(error);
-                alert("Processing failed. Please check your internet connection and try again.");
+                alert("MIIBR AI Error: Check your connection and try again.");
                 location.reload();
             }
         };
 
-        // Redesigned Rendering Engine (Much cleaner and error-free)
         function renderAll() {
             if(!extractedSubject) return;
             
@@ -173,7 +165,7 @@
             canvas.height = extractedSubject.height;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // 1. Draw Background First (Behind the subject)
+            // 1. Background
             if(currentBgType === 'color' && currentBgVal !== 'transparent') {
                 ctx.fillStyle = currentBgVal;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -184,11 +176,9 @@
                 ctx.drawImage(currentBgVal, x, y, currentBgVal.width * scale, currentBgVal.height * scale);
             }
 
-            // 2. Draw the AI Extracted Subject on Top (With Filters)
+            // 2. Foreground (With Perception Filters)
             ctx.filter = `brightness(${brightEl.value}%) contrast(${contrastEl.value}%) saturate(${saturateEl.value}%)`;
             ctx.drawImage(extractedSubject, 0, 0, canvas.width, canvas.height);
-            
-            // 3. Reset filters
             ctx.filter = 'none'; 
         }
 
@@ -223,7 +213,7 @@
 
         function downloadImage() {
             const link = document.createElement('a');
-            link.download = `MIIBR_AI_Pro_${Date.now()}.png`;
+            link.download = `MIIBR_PRO_${Date.now()}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
         }

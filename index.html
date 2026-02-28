@@ -6,7 +6,7 @@
     <title>MIIBR AI PRO | Pixel-Perfect Editor</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/dist/browser.umd.js"></script>
+    <script src="https://unpkg.com/@imgly/background-removal@1.5.5/dist/browser.umd.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <style>
@@ -51,6 +51,7 @@
                 <p class="text-slate-500 mb-8 font-medium">Accurate background removal for logos & objects.</p>
                 <div class="bg-blue-600 text-white inline-block px-10 py-4 rounded-2xl font-bold text-lg shadow-lg shadow-blue-200 group-hover:bg-blue-700 transition">UPLOAD IMAGE</div>
             </div>
+            <p id="errorMsg" class="text-red-600 font-bold mt-4 hidden text-sm"></p>
         </div>
 
         <div id="editorBox" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -68,7 +69,6 @@
             </div>
 
             <div class="lg:col-span-4 space-y-6">
-                
                 <div class="bg-white p-8 rounded-[2rem] shadow-lg border border-slate-100">
                     <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 italic">Editor Toolkit</h3>
                     
@@ -127,11 +127,12 @@
             document.getElementById('uploadBox').classList.add('hidden');
             document.getElementById('editorBox').classList.remove('hidden');
             document.getElementById('loader').classList.remove('hidden');
+            document.getElementById('errorMsg').classList.add('hidden');
             
             try {
-                // FIXED: Adding publicPath for Vercel/CDN compatibility
+                // FIXED: Changed publicPath to Unpkg to bypass mobile browser CORS blocks
                 const imageBlob = await imglyRemoveBackground(file, {
-                    publicPath: "https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/dist/assets/",
+                    publicPath: "https://unpkg.com/@imgly/background-removal@1.5.5/dist/assets/",
                     progress: (key, current, total) => {
                         const progText = document.getElementById('progressText');
                         const percent = Math.round((current / total) * 100) || 0;
@@ -152,9 +153,15 @@
                     renderAll(); 
                 };
             } catch (error) {
-                console.error(error);
-                alert("MIIBR AI Error: Check your connection and try again.");
-                location.reload();
+                console.error("MIIBR AI Error: ", error);
+                // Agar ab error aayega toh exact technical reason screen par dikhega
+                document.getElementById('uploadBox').classList.remove('hidden');
+                document.getElementById('editorBox').classList.add('hidden');
+                document.getElementById('loader').classList.add('hidden');
+                
+                const errBox = document.getElementById('errorMsg');
+                errBox.innerText = "Error: " + (error.message || "Failed to load AI model.");
+                errBox.classList.remove('hidden');
             }
         };
 

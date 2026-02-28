@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIIBR AI | Pro Editor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .checkerboard {
+            background-image: linear-gradient(45deg, #e5e7eb 25%, transparent 25%), linear-gradient(-45deg, #e5e7eb 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e5e7eb 75%), linear-gradient(-45deg, transparent 75%, #e5e7eb 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            background-color: white;
+        }
+        .bg-option { cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        .bg-option:hover { transform: scale(1.05); }
+        .active-ring { outline: 3px solid #3b82f6; outline-offset: 2px; }
+        
+        /* Custom Range Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen font-sans text-slate-800">
+
+    <nav class="bg-white border-b py-4 px-6 flex justify-between items-center shadow-sm sticky top-0 z-50">
+        <div class="flex items-center space-x-3">
+            <div class="bg-blue-600 text-white p-2 rounded-xl shadow-md">
+                <i class="fas fa-wand-magic-sparkles"></i>
+            </div>
+            <span class="text-2xl font-black tracking-tight">MIIBR <span class="text-blue-600">AI</span></span>
+        </div>
+        <button onclick="location.reload()" class="font-semibold text-slate-500 hover:text-blue-600 transition flex items-center">
+            <i class="fas fa-rotate-right mr-2"></i> Reset
+        </button>
+    </nav>
+
+    <main class="max-w-7xl mx-auto p-4 md:p-8">
+        
+        <div id="uploadBox" class="bg-white rounded-3xl shadow-lg p-12 text-center border border-slate-100 max-w-2xl mx-auto mt-10 transition-all">
+            <input type="file" id="fileInput" class="hidden" accept="image/*">
+            <div onclick="document.getElementById('fileInput').click()" class="cursor-pointer group">
+                <div class="w-24 h-24 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                    <i class="fas fa-cloud-upload-alt text-4xl"></i>
+                </div>
+                <h1 class="text-4xl font-extrabold text-slate-900 mb-3">Upload an Image</h1>
+                <p class="text-slate-500 mb-8">Remove background & apply filters instantly.</p>
+                <div class="bg-blue-600 text-white inline-block px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-blue-300 transition-all group-hover:-translate-y-1">
+                    Select Photo
+                </div>
+            </div>
+        </div>
+
+        <div id="editorBox" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 items-start mt-4">
+            
+            <div class="lg:col-span-8 bg-white p-4 rounded-3xl shadow-sm border border-slate-200">
+                <div class="checkerboard rounded-2xl overflow-hidden relative min-h-[400px] flex items-center justify-center bg-slate-100 border border-slate-200">
+                    <canvas id="outputCanvas" class="max-w-full h-auto max-h-[70vh] object-contain"></canvas>
+                    
+                    <div id="loader" class="absolute inset-0 bg-white/90 flex flex-col items-center justify-center z-10 hidden backdrop-blur-sm transition-all">
+                        <i class="fas fa-circle-notch fa-spin text-5xl text-blue-600 mb-4"></i>
+                        <p class="font-bold text-slate-700 text-lg animate-pulse">AI is extracting subject...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-4 bg-white p-6 rounded-3xl shadow-sm border border-slate-200 h-[70vh] overflow-y-auto">
+                
+                <div class="mb-8">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Background</h3>
+                    
+                    <div class="flex flex-wrap gap-3 mb-4">
+                        <div onclick="setBg('transparent', this)" class="w-12 h-12 rounded-full checkerboard border border-slate-300 bg-option active-ring" title="Transparent"></div>
+                        <div onclick="setBg('#ffffff', this)" class="w-12 h-12 rounded-full bg-white border border-slate-300 bg-option" title="White"></div>
+                        <div onclick="setBg('#3b82f6', this)" class="w-12 h-12 rounded-full bg-blue-500 bg-option"></div>
+                        <div onclick="setBg('#10b981', this)" class="w-12 h-12 rounded-full bg-emerald-500 bg-option"></div>
+                        <div onclick="setBg('#000000', this)" class="w-12 h-12 rounded-full bg-black bg-option"></div>
+                    </div>
+
+                    <input type="file" id="bgInput" class="hidden" accept="image/*">
+                    <button onclick="document.getElementById('bgInput').click()" class="w-full py-3 px-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition flex items-center justify-center">
+                        <i class="fas fa-image mr-2 text-blue-500"></i> Upload Custom Background
+                    </button>
+                </div>
+
+                <hr class="border-slate-100 mb-6">
+
+                <div class="mb-8 space-y-5">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider">Adjust Subject</h3>
+                    
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold text-slate-500 mb-2">
+                            <span>Brightness</span>
+                            <span id="brightVal">100%</span>
+                        </div>
+                        <input type="range" id="brightness" min="0" max="200" value="100" oninput="updateFilters()">
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold text-slate-500 mb-2">
+                            <span>Contrast</span>
+                            <span id="contrastVal">100%</span>
+                        </div>
+                        <input type="range" id="contrast" min="0" max="200" value="100" oninput="updateFilters()">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold text-slate-500 mb-2">
+                            <span>Saturation</span>
+                            <span id="saturateVal">100%</span>
+                        </div>
+                        <input type="range" id="saturation" min="0" max="200" value="100" oninput="updateFilters()">
+                    </div>
+                </div>
+
+                <button onclick="downloadImage()" class="w-full bg-slate-900 hover:bg-blue-600 text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center transition-all shadow-md">
+                    <i class="fas fa-download mr-2"></i> Save Image
+                </button>
+                
+                <p id="errorMsg" class="text-red-500 text-xs text-center mt-3 hidden font-semibold"></p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('outputCanvas');
+        const ctx = canvas.getContext('2d');
+        let originalImg = null;
+        let personMask = null;
+        
+        // State Management
+        let currentBgType = 'transparent'; 
+        let currentBgVal = 'transparent';
+        
+        // Filter Elements
+        const brightEl = document.getElementById('brightness');
+        const contrastEl = document.getElementById('contrast');
+        const saturateEl = document.getElementById('saturation');
+
+        // Initialize AI Segmenter
+        const selfieSegmentation = new SelfieSegmentation({locateFile: (file) => {
+            return `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`;
+        }});
+        selfieSegmentation.setOptions({ modelSelection: 1 });
+        selfieSegmentation.onResults(onResults);
+
+        // 1. Handle Main Image Upload
+        document.getElementById('fileInput').onchange = (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            
+            document.getElementById('uploadBox').classList.add('hidden');
+            document.getElementById('editorBox').classList.remove('hidden');
+            document.getElementById('loader').classList.remove('hidden');
+            document.getElementById('errorMsg').classList.add('hidden');
+            
+            originalImg = new Image();
+            // Error prevention: Create safe URL
+            originalImg.src = URL.createObjectURL(file); 
+            originalImg.onload = async () => {
+                try {
+                    await selfieSegmentation.send({image: originalImg});
+                } catch (error) {
+                    showError("Error processing image. Please try a different photo.");
+                    document.getElementById('loader').classList.add('hidden');
+                }
+            };
+        };
+
+        // 2. Process AI Results
+        function onResults(results) {
+            personMask = results.segmentationMask;
+            renderAll();
+            document.getElementById('loader').classList.add('hidden');
+        }
+
+        // 3. Robust Rendering Engine (Error Free Order)
+        function renderAll() {
+            if(!originalImg || !personMask) return;
+            
+            // Match canvas size to image
+            canvas.width = originalImg.width;
+            canvas.height = originalImg.height;
+
+            // Clear previous frame
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // A. Draw Mask First
+            ctx.drawImage(personMask, 0, 0, canvas.width, canvas.height);
+            
+            // B. Apply Source-In (Keeps only pixels inside the mask)
+            ctx.globalCompositeOperation = 'source-in';
+            
+            // C. Apply Filters to Foreground
+            ctx.filter = `brightness(${brightEl.value}%) contrast(${contrastEl.value}%) saturate(${saturateEl.value}%)`;
+            ctx.drawImage(originalImg, 0, 0, canvas.width, canvas.height);
+            
+            // D. Switch to Destination-Over to draw background behind the person
+            ctx.globalCompositeOperation = 'destination-over';
+            
+            // E. Remove filters so background isn't affected
+            ctx.filter = 'none'; 
+            
+            // F. Draw Background
+            if(currentBgType === 'color' && currentBgVal !== 'transparent') {
+                ctx.fillStyle = currentBgVal;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            } else if(currentBgType === 'image' && currentBgVal) {
+                // Fill the canvas nicely with the image (cover style)
+                const scale = Math.max(canvas.width / currentBgVal.width, canvas.height / currentBgVal.height);
+                const x = (canvas.width / 2) - (currentBgVal.width / 2) * scale;
+                const y = (canvas.height / 2) - (currentBgVal.height / 2) * scale;
+                ctx.drawImage(currentBgVal, x, y, currentBgVal.width * scale, currentBgVal.height * scale);
+            }
+
+            // G. Reset composite mode
+            ctx.globalCompositeOperation = 'source-over';
+        }
+
+        // 4. Update UI Filters Live
+        function updateFilters() {
+            document.getElementById('brightVal').innerText = brightEl.value + '%';
+            document.getElementById('contrastVal').innerText = contrastEl.value + '%';
+            document.getElementById('saturateVal').innerText = saturateEl.value + '%';
+            renderAll();
+        }
+
+        // 5. Handle Background Changes
+        function setBg(val, el) {
+            currentBgType = 'color';
+            currentBgVal = val;
+            
+            // Update UI Ring
+            document.querySelectorAll('.bg-option').forEach(e => e.classList.remove('active-ring'));
+            if(el) el.classList.add('active-ring');
+            
+            renderAll();
+        }
+
+        // Handle Custom Image Background upload
+        document.getElementById('bgInput').onchange = (e) => {
+            const file = e.target.files[0];
+            if(file) {
+                const img = new Image();
+                img.src = URL.createObjectURL(file);
+                img.onload = () => {
+                    currentBgType = 'image';
+                    currentBgVal = img;
+                    
+                    document.querySelectorAll('.bg-option').forEach(el => el.classList.remove('active-ring'));
+                    renderAll();
+                };
+            }
+        };
+
+        // 6. Safe Download Function (Error Free)
+        function downloadImage() {
+            try {
+                const link = document.createElement('a');
+                link.download = `MIIBR_AI_${Date.now()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } catch (error) {
+                showError("Download blocked by browser security. Try resetting the background.");
+            }
+        }
+
+        function showError(msg) {
+            const errEl = document.getElementById('errorMsg');
+            errEl.innerText = msg;
+            errEl.classList.remove('hidden');
+            setTimeout(() => errEl.classList.add('hidden'), 5000);
+        }
+    </script>
+</body>
+</html>

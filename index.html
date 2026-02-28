@@ -6,7 +6,6 @@
     <title>MIIBR AI PRO | Pixel-Perfect Editor</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@imgly/background-removal@1.5.5/dist/browser.umd.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <style>
@@ -43,7 +42,7 @@
         
         <div id="uploadBox" class="bg-white rounded-[2.5rem] shadow-xl p-12 text-center border border-slate-100 max-w-2xl mx-auto mt-12 transition-all">
             <input type="file" id="fileInput" class="hidden" accept="image/*">
-            <div onclick="document.getElementById('fileInput').click()" class="cursor-pointer group">
+            <div id="uploadTrigger" class="cursor-pointer group">
                 <div class="w-24 h-24 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                     <i class="fas fa-expand text-4xl"></i>
                 </div>
@@ -75,13 +74,13 @@
                     <div class="mb-8">
                         <p class="text-sm font-bold text-slate-800 mb-4">Background Styles</p>
                         <div class="flex flex-wrap gap-3">
-                            <div onclick="setBg('transparent', this)" class="w-12 h-12 rounded-xl checkerboard border border-slate-200 bg-option active-ring"></div>
-                            <div onclick="setBg('#ffffff', this)" class="w-12 h-12 rounded-xl bg-white border border-slate-200 bg-option"></div>
-                            <div onclick="setBg('#000000', this)" class="w-12 h-12 rounded-xl bg-black bg-option"></div>
-                            <div onclick="setBg('#3b82f6', this)" class="w-12 h-12 rounded-xl bg-blue-500 bg-option"></div>
+                            <div id="bgTransparent" class="w-12 h-12 rounded-xl checkerboard border border-slate-200 bg-option active-ring"></div>
+                            <div id="bgWhite" class="w-12 h-12 rounded-xl bg-white border border-slate-200 bg-option"></div>
+                            <div id="bgBlack" class="w-12 h-12 rounded-xl bg-black bg-option"></div>
+                            <div id="bgBlue" class="w-12 h-12 rounded-xl bg-blue-500 bg-option"></div>
                         </div>
                         <input type="file" id="bgInput" class="hidden" accept="image/*">
-                        <button onclick="document.getElementById('bgInput').click()" class="w-full mt-6 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-black text-slate-500 hover:bg-slate-100 transition">
+                        <button id="customBgTrigger" class="w-full mt-6 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-black text-slate-500 hover:bg-slate-100 transition">
                             + CUSTOM BACKGROUND
                         </button>
                     </div>
@@ -89,19 +88,19 @@
                     <div class="space-y-6 mb-8">
                         <div>
                             <div class="flex justify-between text-[10px] font-black text-slate-400 mb-2 uppercase">Brightness <span id="brightVal">100%</span></div>
-                            <input type="range" id="brightness" min="0" max="200" value="100" oninput="updateFilters()">
+                            <input type="range" id="brightness" min="0" max="200" value="100">
                         </div>
                         <div>
                             <div class="flex justify-between text-[10px] font-black text-slate-400 mb-2 uppercase">Contrast <span id="contrastVal">100%</span></div>
-                            <input type="range" id="contrast" min="0" max="200" value="100" oninput="updateFilters()">
+                            <input type="range" id="contrast" min="0" max="200" value="100">
                         </div>
                         <div>
                             <div class="flex justify-between text-[10px] font-black text-slate-400 mb-2 uppercase">Saturation <span id="saturateVal">100%</span></div>
-                            <input type="range" id="saturation" min="0" max="200" value="100" oninput="updateFilters()">
+                            <input type="range" id="saturation" min="0" max="200" value="100">
                         </div>
                     </div>
 
-                    <button onclick="downloadImage()" class="w-full bg-slate-900 hover:bg-blue-600 text-white py-4 rounded-2xl font-black text-lg transition-all shadow-xl flex items-center justify-center">
+                    <button id="downloadBtn" class="w-full bg-slate-900 hover:bg-blue-600 text-white py-4 rounded-2xl font-black text-lg transition-all shadow-xl flex items-center justify-center">
                         <i class="fas fa-download mr-3"></i> SAVE HD PNG
                     </button>
                 </div>
@@ -109,7 +108,10 @@
         </div>
     </main>
 
-    <script>
+    <script type="module">
+        // Direct import guarantees the function loads properly
+        import imglyRemoveBackground from "https://unpkg.com/@imgly/background-removal@1.5.5/dist/browser.mjs";
+
         const canvas = document.getElementById('outputCanvas');
         const ctx = canvas.getContext('2d');
         let extractedSubject = null; 
@@ -119,6 +121,11 @@
         const brightEl = document.getElementById('brightness');
         const contrastEl = document.getElementById('contrast');
         const saturateEl = document.getElementById('saturation');
+
+        // File Upload Handler
+        document.getElementById('uploadTrigger').addEventListener('click', () => {
+            document.getElementById('fileInput').click();
+        });
 
         document.getElementById('fileInput').onchange = async (e) => {
             const file = e.target.files[0];
@@ -130,7 +137,6 @@
             document.getElementById('errorMsg').classList.add('hidden');
             
             try {
-                // FIXED: Changed publicPath to Unpkg to bypass mobile browser CORS blocks
                 const imageBlob = await imglyRemoveBackground(file, {
                     publicPath: "https://unpkg.com/@imgly/background-removal@1.5.5/dist/assets/",
                     progress: (key, current, total) => {
@@ -154,13 +160,12 @@
                 };
             } catch (error) {
                 console.error("MIIBR AI Error: ", error);
-                // Agar ab error aayega toh exact technical reason screen par dikhega
                 document.getElementById('uploadBox').classList.remove('hidden');
                 document.getElementById('editorBox').classList.add('hidden');
                 document.getElementById('loader').classList.add('hidden');
                 
                 const errBox = document.getElementById('errorMsg');
-                errBox.innerText = "Error: " + (error.message || "Failed to load AI model.");
+                errBox.innerText = "Error: " + (error.message || "Failed to load AI model. Try refreshing.");
                 errBox.classList.remove('hidden');
             }
         };
@@ -172,7 +177,6 @@
             canvas.height = extractedSubject.height;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // 1. Background
             if(currentBgType === 'color' && currentBgVal !== 'transparent') {
                 ctx.fillStyle = currentBgVal;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -183,26 +187,41 @@
                 ctx.drawImage(currentBgVal, x, y, currentBgVal.width * scale, currentBgVal.height * scale);
             }
 
-            // 2. Foreground (With Perception Filters)
             ctx.filter = `brightness(${brightEl.value}%) contrast(${contrastEl.value}%) saturate(${saturateEl.value}%)`;
             ctx.drawImage(extractedSubject, 0, 0, canvas.width, canvas.height);
             ctx.filter = 'none'; 
         }
 
-        function updateFilters() {
+        // Filters UI Update
+        const updateFilters = () => {
             document.getElementById('brightVal').innerText = brightEl.value + '%';
             document.getElementById('contrastVal').innerText = contrastEl.value + '%';
             document.getElementById('saturateVal').innerText = saturateEl.value + '%';
             renderAll();
-        }
+        };
 
-        function setBg(val, el) {
+        brightEl.addEventListener('input', updateFilters);
+        contrastEl.addEventListener('input', updateFilters);
+        saturateEl.addEventListener('input', updateFilters);
+
+        // Background Selection Logic
+        const setBg = (val, el) => {
             currentBgType = 'color';
             currentBgVal = val;
             document.querySelectorAll('.bg-option').forEach(e => e.classList.remove('active-ring'));
             if(el) el.classList.add('active-ring');
             renderAll();
-        }
+        };
+
+        document.getElementById('bgTransparent').addEventListener('click', function() { setBg('transparent', this); });
+        document.getElementById('bgWhite').addEventListener('click', function() { setBg('#ffffff', this); });
+        document.getElementById('bgBlack').addEventListener('click', function() { setBg('#000000', this); });
+        document.getElementById('bgBlue').addEventListener('click', function() { setBg('#3b82f6', this); });
+
+        // Custom Background Image
+        document.getElementById('customBgTrigger').addEventListener('click', () => {
+            document.getElementById('bgInput').click();
+        });
 
         document.getElementById('bgInput').onchange = (e) => {
             const file = e.target.files[0];
@@ -218,12 +237,13 @@
             }
         };
 
-        function downloadImage() {
+        // Download
+        document.getElementById('downloadBtn').addEventListener('click', () => {
             const link = document.createElement('a');
             link.download = `MIIBR_PRO_${Date.now()}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
-        }
+        });
     </script>
 </body>
 </html>
